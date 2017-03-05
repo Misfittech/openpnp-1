@@ -64,16 +64,18 @@ public class ReferenceFiducialLocator implements FiducialLocator {
 
         Logger.debug("Chose {} and {}", placementA.getId(), placementB.getId());
 
-		return locateBoard(boardLocation, placementA, placementB, new Length(0, LengthUnit.Millimeters));
-	}
-	public Location locateBoard(BoardLocation boardLocation, Placement placementA, Placement placementB, Length fidDia)
-			throws Exception {
+        return locateBoard(boardLocation, placementA, placementB,
+                new Length(0, LengthUnit.Millimeters));
+    }
+
+    public Location locateBoard(BoardLocation boardLocation, Placement placementA,
+            Placement placementB, Length fidDia) throws Exception {
         // Run the fiducial check on each and get their actual locations
-		Location actualLocationA = getFiducialLocation(boardLocation, placementA, fidDia);
+        Location actualLocationA = getFiducialLocation(boardLocation, placementA, fidDia);
         if (actualLocationA == null) {
             throw new Exception("Unable to locate first fiducial.");
         }
-		Location actualLocationB = getFiducialLocation(boardLocation, placementB, fidDia);
+        Location actualLocationB = getFiducialLocation(boardLocation, placementB, fidDia);
         if (actualLocationB == null) {
             throw new Exception("Unable to locate second fiducial.");
         }
@@ -183,49 +185,53 @@ public class ReferenceFiducialLocator implements FiducialLocator {
      * @return
      * @throws Exception
      */
-	private static Location getFiducialLocation(BoardLocation boardLocation, Placement fid, Length fidDia) throws Exception {
+    private static Location getFiducialLocation(BoardLocation boardLocation, Placement fid,
+            Length fidDia) throws Exception {
         Camera camera = Configuration.get().getMachine().getDefaultHead().getDefaultCamera();
 
         Logger.debug("Locating {}", fid.getId());
 
-		Footprint footprint;
+        Footprint footprint;
 
-		// Careful...magic number below. Also used in JobPanel. This are for
-		// global panel fiducials, which do not have an entry in the PCB BOM.
-		if ((fid.getId().equals("PanelFid1_a322") || fid.getId().equals("PanelFid2_g301"))) {
-			footprint = new Footprint();
-			Pad p = new Pad();
-			p.setWidth(fidDia.getValue());
-			p.setHeight(fidDia.getValue());
-			p.setRoundness(1);
-			footprint.addPad(p);
-		} else {
-        Part part = fid.getPart();
-	        if (part == null) {
-					throw new Exception(String.format("Fiducial %s does not have a valid part assigned.", fid.getId()));
-	        }
-	
-	        org.openpnp.model.Package pkg = part.getPackage();
-	        if (pkg == null) {
-					throw new Exception(String.format("Part %s does not have a valid package assigned.", part.getId()));
-	        }
-	
-	        footprint = pkg.getFootprint();
-	        if (footprint == null) {
-	            throw new Exception(String.format(
-	                    "Package %s does not have a valid footprint. See https://github.com/openpnp/openpnp/wiki/Fiducials.",
-	                    pkg.getId()));
-	        }
-	
-	        if (footprint.getShape() == null) {
-	            throw new Exception(String.format(
-	                    "Package %s has an invalid or empty footprint.  See https://github.com/openpnp/openpnp/wiki/Fiducials.",
-	                    pkg.getId()));
-	        }
-		}
+        // Careful...magic number below. Also used in JobPanel. This are for
+        // global panel fiducials, which do not have an entry in the PCB BOM.
+        if ((fid.getId().equals("PanelFid1_a322") || fid.getId().equals("PanelFid2_g301"))) {
+            footprint = new Footprint();
+            Pad p = new Pad();
+            p.setWidth(fidDia.getValue());
+            p.setHeight(fidDia.getValue());
+            p.setRoundness(1);
+            footprint.addPad(p);
+        }
+        else {
+            Part part = fid.getPart();
+            if (part == null) {
+                throw new Exception(String
+                        .format("Fiducial %s does not have a valid part assigned.", fid.getId()));
+            }
+
+            org.openpnp.model.Package pkg = part.getPackage();
+            if (pkg == null) {
+                throw new Exception(String.format("Part %s does not have a valid package assigned.",
+                        part.getId()));
+            }
+
+            footprint = pkg.getFootprint();
+            if (footprint == null) {
+                throw new Exception(String.format(
+                        "Package %s does not have a valid footprint. See https://github.com/openpnp/openpnp/wiki/Fiducials.",
+                        pkg.getId()));
+            }
+
+            if (footprint.getShape() == null) {
+                throw new Exception(String.format(
+                        "Package %s has an invalid or empty footprint.  See https://github.com/openpnp/openpnp/wiki/Fiducials.",
+                        pkg.getId()));
+            }
+        }
 
         // Create the template
-		BufferedImage template = createTemplate(camera.getUnitsPerPixel(), footprint);
+        BufferedImage template = createTemplate(camera.getUnitsPerPixel(), footprint);
 
         // Move to where we expect to find the fid
         Location location =
@@ -309,9 +315,10 @@ public class ReferenceFiducialLocator implements FiducialLocator {
         shape = tx.createTransformedShape(shape);
 
         Rectangle2D bounds = shape.getBounds2D();
-        
+
         if (bounds.getWidth() == 0 || bounds.getHeight() == 0) {
-            throw new Exception("Invalid footprint found, unable to create template for fiducial match. Width and height of pads must be greater than 0. See https://github.com/openpnp/openpnp/wiki/Fiducials.");
+            throw new Exception(
+                    "Invalid footprint found, unable to create template for fiducial match. Width and height of pads must be greater than 0. See https://github.com/openpnp/openpnp/wiki/Fiducials.");
         }
 
         // Make the image 50% bigger than the shape. This gives better
