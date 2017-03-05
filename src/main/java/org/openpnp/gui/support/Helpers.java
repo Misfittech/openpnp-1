@@ -57,6 +57,13 @@ public class Helpers {
         }
     }
 
+    public static void selectFirstTableRow(JTable table) {
+        table.clearSelection();
+        int index = 0;
+        index = table.convertRowIndexToView(index);
+        table.addRowSelectionInterval(index, index);
+    }
+    
     /**
      * Select the last row in a table. Handy for selecting a row that was just added.
      * 
@@ -84,8 +91,6 @@ public class Helpers {
          table.addRowSelectionInterval(index, index);   
     }
     
-    
-
     /**
      * Create a unique name consisting of the prefix and an integer. The name is guaranteed to be
      * unique within the properties of the given Collection using the given propertyName.
